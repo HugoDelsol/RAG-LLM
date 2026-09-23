@@ -3,25 +3,30 @@ import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 
-with open("corpus.json", 'r', encoding='utf-8') as f:
-    data = json.load(f)
+# with open("corpus.json", 'r', encoding='utf-8') as f:
+#     data = json.load(f)
 
-textes = [item['texte'] for item in data]
+# textes = [item['texte'] for item in data]
 
-print(textes)
+# print(textes)
 
-model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+# model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
-embeddings = model.encode(textes)
+# embeddings = model.encode(textes)
 
-print(embeddings.shape)
+# print(embeddings.shape)
 
-tensor_model = model.similarity(embeddings1=embeddings, embeddings2=embeddings)
+# np.save('embeddings_sbert.py', embeddings)
 
-df = pd.DataFrame(tensor_model.numpy())
+print(np.load('embeddings_sbert.npy'))
+contenu_sbert = np.load('embeddings_sbert.npy')
 
-print(df)
+# tensor_model = model.similarity(embeddings1=embeddings, embeddings2=embeddings)
 
-equal = np.dot(embeddings[1], embeddings[2]) / (np.linalg.norm(embeddings[1]) * np.linalg.norm(embeddings[2]))
+# df = pd.DataFrame(tensor_model.numpy())
 
-print(equal)
+# print(df)
+
+# equal = np.dot(embeddings[1], embeddings[2]) / (np.linalg.norm(embeddings[1]) * np.linalg.norm(embeddings[2]))
+
+# print(equal)
