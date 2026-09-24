@@ -1,6 +1,12 @@
 from sentence_transformers import util
 import numpy as np
 import pandas as pd
+import json
+
+with open("corpus.json", 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+themes = [item['theme'] for item in data]
 
 data_sbert = np.load('embeddings_sbert.npy')
 data_mistral = np.load('embeddings_mistral.npy')
@@ -11,8 +17,11 @@ print(data_mistral.shape)
 cosine_scores_sbert = util.cos_sim(data_sbert, data_sbert)
 cosine_scores_mistral = util.cos_sim(data_mistral, data_mistral)
 
-sim_sbert = pd.DataFrame(cosine_scores_sbert.numpy().round(3))
-sim_mistral = pd.DataFrame(cosine_scores_mistral.numpy().round(3))
+sbert = np.array(cosine_scores_sbert.numpy())
+mistral = np.array(cosine_scores_mistral.numpy())
+
+# sim_sbert = pd.DataFrame(cosine_scores_sbert.numpy())
+# sim_mistral = pd.DataFrame(cosine_scores_mistral.numpy())
 
 paires = [
     {'label': 'permis construire / conduire', 'type': 'A', 'indices': (0, 1)},
@@ -27,9 +36,6 @@ paires = [
 # B : même sens, mots différents. On attend un score haut.
 # C : même thème, sans piège. On attend un score haut.
 
-sbert = np.array(sim_sbert)
-mistral = np.array(sim_mistral)
-
 resultats = []
 
 for paire in paires:
@@ -42,10 +48,33 @@ for paire in paires:
     })
 
 print(pd.DataFrame(resultats))
-print(pd.DataFrame(sbert))
-print(pd.DataFrame(mistral))
 
-print(np.argmax(mistral))
+print(pd.DataFrame(sbert).round(2))
+print(pd.DataFrame(mistral).round(2))
 
-# for i in range(len(sim_sbert)):
-#     for j in range(len(sim_mistral[i])):
+def score_top_1(matrice, theme_list):
+    result = 0
+
+    for i in range(len(matrice)):
+        meilleur_score = -1
+        meilleur_j = None
+
+        for j in range(len(matrice[i])):
+            if j == i: 
+                continue 
+
+            if matrice[i, j] > meilleur_score:
+                meilleur_score = matrice[i, j]
+                meilleur_j = j
+
+        if theme_list[i] == theme_list[meilleur_j]:
+            result += 1
+            
+        print(f"LIGNE = {i} : COLONNE = {meilleur_j}")
+
+    return result
+
+score_sbert = score_top_1(matrice=sbert, theme_list=themes)
+score_mistral = score_top_1(matrice=mistral, theme_list=themes)
+        
+print(f"SBERT : {score_sbert}/{len(themes)} | MISTRAL : {score_mistral}/{len(themes)}")
