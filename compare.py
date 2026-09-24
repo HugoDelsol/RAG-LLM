@@ -10,15 +10,19 @@ themes = [item['theme'] for item in data]
 
 data_sbert = np.load('embeddings_sbert.npy')
 data_mistral = np.load('embeddings_mistral.npy')
+data_spacy = np.load('embeddings_spacy.npy')
 
 print(data_sbert.shape)
 print(data_mistral.shape)
+print(data_spacy.shape)
 
 cosine_scores_sbert = util.cos_sim(data_sbert, data_sbert)
 cosine_scores_mistral = util.cos_sim(data_mistral, data_mistral)
+cosine_scores_spacy = util.cos_sim(data_spacy, data_spacy)
 
-sbert = np.array(cosine_scores_sbert.numpy())
-mistral = np.array(cosine_scores_mistral.numpy())
+sbert = cosine_scores_sbert.numpy()
+mistral = cosine_scores_mistral.numpy()
+spacy = cosine_scores_spacy.numpy()
 
 # sim_sbert = pd.DataFrame(cosine_scores_sbert.numpy())
 # sim_mistral = pd.DataFrame(cosine_scores_mistral.numpy())
@@ -32,25 +36,25 @@ paires = [
     {'label': 'carte cantine / école',        'type': 'C', 'indices': (3, 9)},
 ]
 
-# A : mêmes mots, sens différent. On attend un score bas.
-# B : même sens, mots différents. On attend un score haut.
-# C : même thème, sans piège. On attend un score haut.
-
 resultats = []
 
 for paire in paires:
     i, j = paire['indices']
     resultats.append({
         'type': paire['type'],
-        'label': paire['label'],
         'sbert': sbert[i, j],
         'mistral': mistral[i, j],
+        'spacy': spacy[i, j],
     })
 
 print(pd.DataFrame(resultats))
+print("A : mêmes mots, sens différent. On attend un score bas.")
+print("B : même sens, mots différents. On attend un score haut.")
+print("C : même thème, sans piège. On attend un score haut.")
 
-print(pd.DataFrame(sbert).round(2))
-print(pd.DataFrame(mistral).round(2))
+# print(pd.DataFrame(sbert).round(2))
+# print(pd.DataFrame(mistral).round(2))
+# print(pd.DataFrame(spacy).round(2))
 
 def score_top_1(matrice, theme_list):
     result = 0
@@ -76,5 +80,6 @@ def score_top_1(matrice, theme_list):
 
 score_sbert = score_top_1(matrice=sbert, theme_list=themes)
 score_mistral = score_top_1(matrice=mistral, theme_list=themes)
+score_spacy = score_top_1(matrice=spacy, theme_list=themes)
         
-print(f"SBERT : {score_sbert}/{len(themes)} | MISTRAL : {score_mistral}/{len(themes)}")
+print(f"SBERT : {score_sbert}/{len(themes)} | MISTRAL : {score_mistral}/{len(themes)} | SPACY : {score_spacy}/{len(themes)}")
